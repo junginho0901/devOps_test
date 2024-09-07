@@ -141,12 +141,12 @@ serviceAccount:
 
 # Resource limits and requests
 resources:
-  limits:
-    cpu: 100m
-    memory: 128Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    memory: "256Mi"  # 메모리 요청을 256Mi로 늘림
+    cpu: "200m"      # CPU 요청을 200m으로 늘림
+  limits:
+    memory: "512Mi"  # 메모리 제한을 512Mi로 늘림
+    cpu: "500m"      # CPU 제한을 500m으로 늘림
 
 autoscaling:
   enabled: false
@@ -154,3 +154,19 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 1
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 1
