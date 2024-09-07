@@ -1,7 +1,7 @@
 pipeline {
        agent any
        environment {
-           DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+           DOCKER_HUB_CREDENTIALS = credentials('admin')
            DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
            DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
        }
