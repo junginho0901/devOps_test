@@ -117,8 +117,9 @@ image:
 
 # Service configuration
 service:
-  type: ClusterIP
+  type: NodePort
   port: 3000
+  nodePort: 30000  # 30000-32767 범위 내에서 선택
 
 # Ingress configuration
 ingress:
