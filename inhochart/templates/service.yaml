@@ -9,7 +9,6 @@ spec:
   ports:
     - port: {{ .Values.service.port }}
       targetPort: 3000
-      protocol: TCP
-      name: http
+      nodePort: 30996
   selector:
     {{- include "inhochart.selectorLabels" . | nindent 4 }}
