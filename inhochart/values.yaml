@@ -109,10 +109,11 @@
 # Deployment related
 replicaCount: 1
 
+# Image configuration
 image:
   repository: jeonginho/inhorepo
   pullPolicy: Always
-  tag: "BUILD_NUMBER-COMMIT_HASH"
+  tag: "{{ .Values.image.tag }}"
 
 
 service:
