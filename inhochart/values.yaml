@@ -113,8 +113,9 @@ replicaCount: 1
 image:
   repository: jeonginho/inhorepo
   pullPolicy: Always
-  tag: "latest"
-  
+  tag: "{{ .Values.image.tag }}"
+
+
 service:
   type: NodePort
   port: 3000
