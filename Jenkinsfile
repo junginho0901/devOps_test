@@ -52,9 +52,6 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'admin', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                         sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
-                        // latest 태그도 업데이트
-                        sh "docker tag ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_IMAGE_NAME}:latest"
-                        sh "docker push ${DOCKER_IMAGE_NAME}:latest"
                     }
                 }
             }
