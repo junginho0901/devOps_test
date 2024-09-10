@@ -114,12 +114,7 @@ image:
   repository: jeonginho/inhorepo
   pullPolicy: Always
   tag: "latest"
-
-# Service configuration
-# service:
-#   type: NodePort
-#   port: 3000
-#   nodePort: 30000  # 30000-32767 범위 내에서 선택
+  
 service:
   type: NodePort
   port: 3000
