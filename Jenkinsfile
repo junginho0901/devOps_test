@@ -31,6 +31,7 @@
 //     }
 // }
 
+
 pipeline {
     agent any
     environment {
@@ -59,7 +60,7 @@ pipeline {
             steps {
                 script {
                     // GitHub 자격 증명을 사용하여 git pull 및 git push 수행
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'junginho_jenkins', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         // 먼저 최신 원격 변경 사항을 가져옴
                         sh """
                         git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
