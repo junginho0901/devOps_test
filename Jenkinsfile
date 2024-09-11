@@ -58,9 +58,11 @@ pipeline {
         stage('Update Helm Chart') {
             steps {
                 script {
-                    // GitHub 자격 증명을 사용하여 git push 수행
-                    withCredentials([usernamePassword(credentialsId: 'junginho_jenkins', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    // GitHub 자격 증명을 사용하여 git pull 및 git push 수행
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        // 먼저 최신 원격 변경 사항을 가져옴
                         sh """
+                        git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
                         sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
                         git config user.email "cn5114555@naver.com"
                         git config user.name "junginho0901"
