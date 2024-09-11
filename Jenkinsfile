@@ -62,8 +62,8 @@ pipeline {
                     // Helm 차트의 values.yaml 파일 업데이트
                     sh """
                     sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
-                    git config user.email "jenkins@example.com"
-                    git config user.name "Jenkins"
+                    git config user.email "cn5114555@naver.com"
+                    git config user.name "junginho0901"
                     git add ./inhochart/values.yaml
                     git commit -m "Update image tag to ${IMAGE_TAG}"
                     git push origin HEAD:main
