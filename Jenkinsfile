@@ -99,6 +99,7 @@ pipeline {
                 script {
                     GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
+                    echo "Set IMAGE_TAG to ${IMAGE_TAG}"
                 }
             }
         }
@@ -108,6 +109,7 @@ pipeline {
                 script {
                     try {
                         sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
+                        echo "Docker image built successfully"
                     } catch (Exception e) {
                         error "Docker 이미지 빌드 실패: ${e.message}"
                     }
@@ -122,6 +124,7 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'admin', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
+                            echo "Docker image pushed successfully"
                         }
                     } catch (Exception e) {
                         error "Docker 이미지 푸시 실패: ${e.message}"
@@ -143,6 +146,7 @@ pipeline {
                             git commit -m "Update image tag to ${IMAGE_TAG}"
                             git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
                             """
+                            echo "Helm chart updated successfully"
                         }
                     } catch (Exception e) {
                         error "Helm 차트 업데이트 실패: ${e.message}"
@@ -152,15 +156,14 @@ pipeline {
         }
     }
     
-post {
+    post {
         always {
-            node(null) {
-                script {
-                    try {
-                        sh "docker logout"
-                    } catch (Exception e) {
-                        echo "Docker 로그아웃 실패: ${e.message}"
-                    }
+            script {
+                try {
+                    sh "docker logout"
+                    echo "Docker logout successful"
+                } catch (Exception e) {
+                    echo "Docker 로그아웃 실패: ${e.message}"
                 }
             }
         }
