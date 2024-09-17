@@ -154,13 +154,11 @@ pipeline {
     
     post {
         always {
-            node {
-                script {
-                    try {
-                        sh "docker logout"
-                    } catch (Exception e) {
-                        echo "Docker 로그아웃 실패: ${e.message}"
-                    }
+            script {
+                try {
+                    sh "docker logout"
+                } catch (Exception e) {
+                    echo "Docker 로그아웃 실패: ${e.message}"
                 }
             }
         }
