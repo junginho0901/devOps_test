@@ -82,63 +82,60 @@
 //         }
 //     }
 // }
-
 pipeline {
     agent any
-    
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('admin')
         DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
-        GIT_COMMIT_SHORT = ""
-        IMAGE_TAG = ""
+        GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+        IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
     }
-    
     stages {
-        stage('Set Environment Variables') {
+        stage('Initialize') {
             steps {
                 script {
-                    GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                    echo "Set IMAGE_TAG to ${IMAGE_TAG}"
+                    echo "Initializing pipeline..."
+                    echo "Image tag set to: ${IMAGE_TAG}"
                 }
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
                     try {
+                        echo "Building Docker image..."
                         sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
                         echo "Docker image built successfully"
                     } catch (Exception e) {
-                        error "Docker 이미지 빌드 실패: ${e.message}"
+                        error "Failed to build Docker image: ${e.message}"
                     }
                 }
             }
         }
-        
         stage('Push Docker Image') {
             steps {
                 script {
                     try {
+                        echo "Pushing Docker image to registry..."
                         withCredentials([usernamePassword(credentialsId: 'admin', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                             sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
-                            echo "Docker image pushed successfully"
                         }
+                        echo "Docker image pushed successfully"
                     } catch (Exception e) {
-                        error "Docker 이미지 푸시 실패: ${e.message}"
+                        error "Failed to push Docker image: ${e.message}"
                     }
                 }
             }
         }
-        
         stage('Update Helm Chart') {
             steps {
                 script {
                     try {
+                        echo "Updating Helm chart..."
                         withCredentials([usernamePassword(credentialsId: 'junginho_jenkins', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                             sh """
+                            git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
                             sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
                             git config user.email "cn5114555@naver.com"
                             git config user.name "junginho0901"
@@ -146,32 +143,31 @@ pipeline {
                             git commit -m "Update image tag to ${IMAGE_TAG}"
                             git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
                             """
-                            echo "Helm chart updated successfully"
                         }
+                        echo "Helm chart updated successfully"
                     } catch (Exception e) {
-                        error "Helm 차트 업데이트 실패: ${e.message}"
+                        error "Failed to update Helm chart: ${e.message}"
                     }
                 }
             }
         }
     }
-    
     post {
         always {
             script {
                 try {
                     sh "docker logout"
-                    echo "Docker logout successful"
+                    echo "Docker logged out successfully"
                 } catch (Exception e) {
-                    echo "Docker 로그아웃 실패: ${e.message}"
+                    echo "Warning: Failed to logout from Docker: ${e.message}"
                 }
             }
         }
         success {
-            echo "파이프라인이 성공적으로 완료되었습니다."
+            echo "Pipeline executed successfully"
         }
         failure {
-            echo "파이프라인 실행 중 오류가 발생했습니다."
+            echo "Pipeline execution failed"
         }
     }
 }
