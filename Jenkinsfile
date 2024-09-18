@@ -35,18 +35,12 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('admin')
+        DOCKER_HUB_CREDENTIALS = credentials('junginho')
         DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
+        GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+        IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
     }
     stages {
-        stage('Set Variables') {
-            steps {
-                script {
-                    GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                }
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
@@ -65,7 +59,9 @@ pipeline {
         stage('Update Helm Chart') {
             steps {
                 script {
+                    // GitHub 자격 증명을 사용하여 git pull 및 git push 수행
                     withCredentials([usernamePassword(credentialsId: 'junginho_jenkins', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        // 먼저 최신 원격 변경 사항을 가져옴
                         sh """
                         git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
                         sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
@@ -82,9 +78,7 @@ pipeline {
     }
     post {
         always {
-            node('jenkinsLabel') {  // 'master' 또는 적절한 에이전트 라벨을 지정하세요.
-                sh "docker logout"
-            }
+            sh "docker logout"
         }
     }
 }
