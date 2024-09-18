@@ -1,0 +1,27 @@
+piVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        securityContext:
+          privileged: true  # 권한 상승 모드 활성화
+        volumeMounts:
+        - name: docker-sock
+          mountPath: /var/run/docker.sock  # Docker 소켓을 마운트
+      volumes:
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock  # 호스트의 Docker 소켓 경로
+

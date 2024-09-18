@@ -37,7 +37,7 @@ pipeline {
 
     environment {
         // Docker Hub 자격 증명 사용
-        DOCKER_HUB_CREDENTIALS = credentials('junginho')  // 자격 증명 ID가 'junginho'로 설정됨
+        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub')  // 자격 증명 ID가 'junginho'로 설정됨
         DOCKER_IMAGE_NAME = "jeonginho/inhorepo"  // Docker Hub에 푸시할 이미지 이름
     }
 
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 script {
                     // Docker Hub에 로그인하고 이미지를 푸시
-                    withCredentials([usernamePassword(credentialsId: 'junginho', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'junginho_hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                         sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
                     }
