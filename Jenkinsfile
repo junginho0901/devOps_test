@@ -35,7 +35,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('junginho')
+        DOCKER_HUB_CREDENTIALS = credentials('F')
         DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
         GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
         IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
@@ -49,7 +49,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'admin', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'junginho', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                         sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
                     }
