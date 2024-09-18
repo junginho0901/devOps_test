@@ -82,7 +82,7 @@ pipeline {
     }
     post {
         always {
-            node {
+            node('jenkinsLabel') {  // 'master' 또는 적절한 에이전트 라벨을 지정하세요.
                 sh "docker logout"
             }
         }
