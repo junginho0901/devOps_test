@@ -5,7 +5,33 @@ pipeline {
         DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
         GIT_CREDENTIALS = credentials('junginho')
     }
+    options {
+        skipDefaultCheckout()
+    }
     stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        extensions: [
+                            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true],
+                            [$class: 'CheckoutOption', timeout: 30],
+                            [$class: 'CleanBeforeCheckout']
+                        ],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/junginho0901/devOps_test.git',
+                            credentialsId: 'junginho'
+                        ]]
+                    ])
+                }
+            }
+        }
         stage('Set Variables') {
             steps {
                 script {
@@ -60,6 +86,7 @@ pipeline {
                     try {
                         withCredentials([usernamePassword(credentialsId: 'junginho', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                             sh """
+                            git config --global http.postBuffer 524288000
                             git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
                             sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
                             git config user.email "cn5114555@naver.com"
