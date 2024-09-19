@@ -14,10 +14,13 @@ pipeline {
                     // Git 초기화 및 원격 저장소 설정
                     sh "git init"
                     sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
-                    sh "git config --global http.postBuffer 524288000"
-                    // Shallow clone으로 최신 커밋만 가져오기
-                    timeout(time: 10, unit: 'MINUTES') {
-                        sh "git fetch --all --depth=1"
+                    // Git 버퍼 크기 설정 (1GB)
+                    sh "git config --global http.postBuffer 1048576000"
+                    // Git fetch 재시도 및 타임아웃 설정
+                    retry(3) {
+                        timeout(time: 10, unit: 'MINUTES') {
+                            sh "git fetch --all --depth=10"
+                        }
                     }
                     sh "git checkout main"
                 }
