@@ -9,6 +9,10 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+        }
         stage('Set Variables') {
             steps {
                 script {
