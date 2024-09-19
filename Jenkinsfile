@@ -9,8 +9,13 @@ pipeline {
         stage('Prepare') {
             steps {
                 script {
+                    // 워크스페이스 정리
                     cleanWs()
+                    // Git 초기화 및 원격 저장소 설정
+                    sh "git init"
+                    sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
                     sh "git config --global http.postBuffer 524288000"
+                    // Shallow clone으로 최신 커밋만 가져오기
                     timeout(time: 10, unit: 'MINUTES') {
                         sh "git fetch --all --depth=1"
                     }
