@@ -6,26 +6,6 @@ pipeline {
         GIT_CREDENTIALS = credentials('junginho')
     }
     stages {
-        stage('Prepare') {
-            steps {
-                script {
-                    // 워크스페이스 정리
-                    cleanWs()
-                    // Git 초기화 및 원격 저장소 설정
-                    sh "git init"
-                    sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
-                    // Git 버퍼 크기 설정 (1GB)
-                    sh "git config --global http.postBuffer 2097152000"
-                    // Git fetch 재시도 및 타임아웃 설정
-                    retry(3) {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            sh "git fetch --all --depth=50"
-                        }
-                    }
-                    sh "git checkout main"
-                }
-            }
-        }
         stage('Set Variables') {
             steps {
                 script {
@@ -33,7 +13,7 @@ pipeline {
                         GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
                     } catch (Exception e) {
-                        error "Failed to set variables: ${e.message}"
+                        error "변수 설정 실패: ${e.message}"
                     }
                 }
             }
@@ -44,7 +24,7 @@ pipeline {
                     try {
                         sh "docker info"
                     } catch (Exception e) {
-                        error "Docker is not running or not accessible: ${e.message}"
+                        error "Docker가 실행 중이 아니거나 접근할 수 없습니다: ${e.message}"
                     }
                 }
             }
@@ -55,7 +35,7 @@ pipeline {
                     try {
                         sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
                     } catch (Exception e) {
-                        error "Docker build failed: ${e.message}"
+                        error "Docker 빌드 실패: ${e.message}"
                     }
                 }
             }
@@ -69,7 +49,7 @@ pipeline {
                             sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
                         }
                     } catch (Exception e) {
-                        error "Failed to push Docker image: ${e.message}"
+                        error "Docker 이미지 푸시 실패: ${e.message}"
                     }
                 }
             }
@@ -90,7 +70,7 @@ pipeline {
                             """
                         }
                     } catch (Exception e) {
-                        error "Failed to update Helm chart: ${e.message}"
+                        error "Helm 차트 업데이트 실패: ${e.message}"
                     }
                 }
             }
@@ -102,7 +82,7 @@ pipeline {
                 try {
                     sh "docker logout"
                 } catch (Exception e) {
-                    echo "Warning: Failed to logout from Docker: ${e.message}"
+                    echo "경고: Docker 로그아웃 실패: ${e.message}"
                 }
             }
         }
