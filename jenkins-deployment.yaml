@@ -9,9 +9,6 @@ spec:
     matchLabels:
       app: jenkins
   strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
     type: RollingUpdate
   template:
     metadata:
@@ -19,7 +16,7 @@ spec:
         app: jenkins
     spec:
       securityContext:
-        fsGroup: 1000  # Jenkins 파일 시스템 접근을 위한 그룹 ID
+        fsGroup: 1000
       initContainers:
       - name: volume-permissions
         image: busybox
@@ -31,9 +28,12 @@ spec:
         image: docker:dind
         command: ["/bin/sh", "-c"]
         args:
-          - apk add --no-cache docker-cli && 
-            docker --version && 
-            cp /usr/bin/docker /docker-cli/docker
+          - |
+            DOCKER_CLI_VERSION=$(docker --version | cut -d ' ' -f 3 | cut -d ',' -f 1)
+            wget -q https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_CLI_VERSION}.tgz -O /tmp/docker.tgz
+            tar -xzf /tmp/docker.tgz -C /tmp
+            mv /tmp/docker/docker /docker-cli/
+            chmod +x /docker-cli/docker
         volumeMounts:
         - name: docker-cli
           mountPath: /docker-cli
@@ -43,17 +43,18 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
           - |
-            cp /docker-cli/docker /usr/local/bin/ &&
-            groupadd -g 999 docker &&
-            usermod -aG docker jenkins &&
-            /usr/local/bin/jenkins.sh
+            cp /docker-cli/docker /usr/local/bin/
+            DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+            groupadd -g ${DOCKER_GID} docker
+            usermod -aG docker jenkins
+            chown root:docker /var/run/docker.sock
+            chmod 660 /var/run/docker.sock
+            su jenkins -c "/usr/local/bin/jenkins.sh"
         ports:
         - containerPort: 8080
-          protocol: TCP
         - containerPort: 50000
-          protocol: TCP
         securityContext:
-          runAsUser: 0
+          runAsUser: 0  # 초기 설정을 위해 root로 시작, 그 후 jenkins 사용자로 전환
         volumeMounts:
         - mountPath: /var/jenkins_home
           name: jenkins-home
@@ -70,5 +71,3 @@ spec:
           path: /var/run/docker.sock
       - name: docker-cli
         emptyDir: {}
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always

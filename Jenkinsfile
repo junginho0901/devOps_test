@@ -1,77 +1,103 @@
-
 pipeline {
     agent any
-
     environment {
-        // Docker Hub 자격 증명 사용
-        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub')  // 자격 증명 ID가 'junginho'로 설정됨
-        DOCKER_IMAGE_NAME = "jeonginho/inhorepo"  // Docker Hub에 푸시할 이미지 이름
+        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub')
+        DOCKER_IMAGE_NAME = "jeonginho/inhorepo"
+        GIT_CREDENTIALS = credentials('junginho')
     }
-
     stages {
+        stage('Prepare') {
+            steps {
+                script {
+                    // 워크스페이스 정리 및 Git 초기화
+                    cleanWs()
+                    sh "git init"
+                    sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
+                    sh "git fetch --all"
+                    sh "git checkout main"
+                }
+            }
+        }
         stage('Set Variables') {
             steps {
                 script {
-                    // Git 커밋 해시를 가져와서 이미지 태그로 사용
-                    GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Docker 이미지를 빌드 (태그에 커밋 해시와 빌드 번호 포함)
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
-                }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    // Docker Hub에 로그인하고 이미지를 푸시
-                    withCredentials([usernamePassword(credentialsId: 'junginho_hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
+                    try {
+                        GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        IMAGE_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
+                    } catch (Exception e) {
+                        error "Failed to set variables: ${e.message}"
                     }
                 }
             }
         }
-
+        stage('Check Docker') {
+            steps {
+                script {
+                    try {
+                        sh "docker info"
+                    } catch (Exception e) {
+                        error "Docker is not running or not accessible: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    try {
+                        sh "docker build -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} ."
+                    } catch (Exception e) {
+                        error "Docker build failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'junginho_hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                            sh "docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}"
+                        }
+                    } catch (Exception e) {
+                        error "Failed to push Docker image: ${e.message}"
+                    }
+                }
+            }
+        }
         stage('Update Helm Chart and Push to GitHub') {
             steps {
                 script {
-                    // GitHub 자격 증명을 사용하여 Helm 차트의 이미지 태그를 업데이트하고 푸시
-                    withCredentials([usernamePassword(credentialsId: 'junginho', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh """
-                        # 최신 원격 변경 사항을 가져옴
-                        git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
-
-                        # Helm 차트의 values.yaml 파일에서 이미지 태그를 업데이트
-                        sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
-
-                        # Git 커밋 설정
-                        git config user.email "cn5114555@naver.com"
-                        git config user.name "junginho0901"
-
-                        # 변경 사항 커밋 및 푸시
-                        git add ./inhochart/values.yaml
-                        git commit -m "Update image tag to ${IMAGE_TAG}"
-                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
-                        """
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'junginho', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                            sh """
+                            git pull https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git main
+                            sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
+                            git config user.email "cn5114555@naver.com"
+                            git config user.name "junginho0901"
+                            git add ./inhochart/values.yaml
+                            git commit -m "Update image tag to ${IMAGE_TAG}"
+                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
+                            """
+                        }
+                    } catch (Exception e) {
+                        error "Failed to update Helm chart: ${e.message}"
                     }
                 }
             }
         }
     }
-
     post {
         always {
-            script {
-                // 파이프라인 완료 후 Docker 로그아웃
-                sh "docker logout"
+            node {
+                script {
+                    try {
+                        sh "docker logout"
+                    } catch (Exception e) {
+                        echo "Warning: Failed to logout from Docker: ${e.message}"
+                    }
+                }
             }
         }
     }
