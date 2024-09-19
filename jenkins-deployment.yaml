@@ -20,17 +20,33 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000  # Jenkins 파일 시스템 접근을 위한 그룹 ID
-      initContainers:  # 볼륨 권한 설정을 위한 initContainer 추가
+      initContainers:
       - name: volume-permissions
         image: busybox
         command: ["sh", "-c", "chown -R 1000:1000 /var/jenkins_home"]
         volumeMounts:
         - name: jenkins-home
           mountPath: /var/jenkins_home
+      - name: docker-cli-install
+        image: docker:dind
+        command: ["/bin/sh", "-c"]
+        args:
+          - apk add --no-cache docker-cli && 
+            docker --version && 
+            cp /usr/bin/docker /docker-cli/docker
+        volumeMounts:
+        - name: docker-cli
+          mountPath: /docker-cli
       containers:
       - name: jenkins
         image: jenkins/jenkins:lts
-        command: ["/usr/local/bin/jenkins.sh"]
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            cp /docker-cli/docker /usr/local/bin/ &&
+            groupadd -g 999 docker &&
+            usermod -aG docker jenkins &&
+            /usr/local/bin/jenkins.sh
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -41,14 +57,18 @@ spec:
         volumeMounts:
         - mountPath: /var/jenkins_home
           name: jenkins-home
-        - mountPath: /var/run/docker.sock  # Docker socket을 Jenkins 컨테이너에 마운트
+        - mountPath: /var/run/docker.sock
           name: docker-sock
+        - name: docker-cli
+          mountPath: /docker-cli
       volumes:
       - name: jenkins-home
         persistentVolumeClaim:
           claimName: jenkins-pv-claim
-      - name: docker-sock  # Docker 데몬에 접근하기 위한 hostPath 볼륨
+      - name: docker-sock
         hostPath:
           path: /var/run/docker.sock
+      - name: docker-cli
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
