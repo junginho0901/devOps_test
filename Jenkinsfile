@@ -15,11 +15,11 @@ pipeline {
                     sh "git init"
                     sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
                     // Git 버퍼 크기 설정 (1GB)
-                    sh "git config --global http.postBuffer 1048576000"
+                    sh "git config --global http.postBuffer 2097152000"
                     // Git fetch 재시도 및 타임아웃 설정
                     retry(3) {
                         timeout(time: 10, unit: 'MINUTES') {
-                            sh "git fetch --all --depth=10"
+                            sh "git fetch --all --depth=50"
                         }
                     }
                     sh "git checkout main"
