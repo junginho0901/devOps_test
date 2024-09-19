@@ -90,13 +90,11 @@ pipeline {
     }
     post {
         always {
-            node {
-                script {
-                    try {
-                        sh "docker logout"
-                    } catch (Exception e) {
-                        echo "Warning: Failed to logout from Docker: ${e.message}"
-                    }
+            script {
+                try {
+                    sh "docker logout"
+                } catch (Exception e) {
+                    echo "Warning: Failed to logout from Docker: ${e.message}"
                 }
             }
         }
