@@ -13,6 +13,7 @@ pipeline {
             steps {
                 cleanWs()
         }
+        }
         stage('Set Variables') {
             steps {
                 script {
