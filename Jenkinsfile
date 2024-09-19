@@ -9,11 +9,11 @@ pipeline {
         stage('Prepare') {
             steps {
                 script {
-                    // 워크스페이스 정리 및 Git 초기화
                     cleanWs()
-                    sh "git init"
-                    sh "git remote add origin https://github.com/junginho0901/devOps_test.git"
-                    sh "git fetch --all"
+                    sh "git config --global http.postBuffer 524288000"
+                    timeout(time: 10, unit: 'MINUTES') {
+                        sh "git fetch --all --depth=1"
+                    }
                     sh "git checkout main"
                 }
             }
@@ -90,13 +90,11 @@ pipeline {
     }
     post {
         always {
-            node {
-                script {
-                    try {
-                        sh "docker logout"
-                    } catch (Exception e) {
-                        echo "Warning: Failed to logout from Docker: ${e.message}"
-                    }
+            script {
+                try {
+                    sh "docker logout"
+                } catch (Exception e) {
+                    echo "Warning: Failed to logout from Docker: ${e.message}"
                 }
             }
         }
