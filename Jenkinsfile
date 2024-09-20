@@ -62,7 +62,7 @@ pipeline {
                 }
             }
         }
-        stage('Update Helm Chart') {
+        stage('Update Helm Chart') {  // Helm 차트 업데이트
             steps {
                 script {
                     sh """
@@ -74,15 +74,6 @@ pipeline {
                         git add ./inhochart/values.yaml
                         git commit -m "Update image tag to ${IMAGE_TAG}"
                         git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
-                    """
-                }
-            }
-        }
-        stage('Deploy to Kubernetes') {  // Helm 배포
-            steps {
-                script {
-                    sh """
-                    helm upgrade --install myapp ./inhochart --namespace project-services --values ./inhochart/values.yaml
                     """
                 }
             }
