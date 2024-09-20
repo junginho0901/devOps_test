@@ -4,6 +4,7 @@ pipeline {
         GIT_CREDENTIALS = credentials('junginho')
         GIT_USERNAME = "${GIT_CREDENTIALS_USR}"
         GIT_PASSWORD = "${GIT_CREDENTIALS_PSW}"
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials') // Docker Hub 자격증명 추가
     }
     options {
         skipDefaultCheckout(true)
@@ -51,6 +52,16 @@ pipeline {
                 '''
             }
         }
+        stage('Build and Push Docker Image') {  // Docker 이미지 빌드 및 푸시 추가
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        def image = docker.build("jeonginho/inhorepo:${IMAGE_TAG}")
+                        image.push()
+                    }
+                }
+            }
+        }
         stage('Update Helm Chart') {
             steps {
                 script {
@@ -63,6 +74,15 @@ pipeline {
                         git add ./inhochart/values.yaml
                         git commit -m "Update image tag to ${IMAGE_TAG}"
                         git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/junginho0901/devOps_test.git HEAD:main
+                    """
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {  // Helm 배포 추가
+            steps {
+                script {
+                    sh """
+                    helm upgrade --install myapp ./inhochart --namespace project-services --values ./inhochart/values.yaml
                     """
                 }
             }
