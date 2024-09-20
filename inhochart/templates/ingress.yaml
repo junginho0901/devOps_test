@@ -9,13 +9,13 @@ metadata:
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" }}
   rules:
-    - host: {{ .Values.ingress.hosts[0].host }}
+    - host: {{ index .Values.ingress.hosts 0 "host" }}
       http:
         paths:
-          - path: {{ .Values.ingress.hosts[0].paths[0].path }}
-            pathType: {{ .Values.ingress.hosts[0].paths[0].pathType }}
+          - path: {{ index .Values.ingress.hosts 0 "paths" 0 "path" }}
+            pathType: {{ index .Values.ingress.hosts 0 "paths" 0 "pathType" }}
             backend:
               service:
                 name: {{ include "inhochart.fullname" . }}
                 port:
-                  number: {{ .Values.service.ports[0].port }}  # 포트 참조 수정
+                  number: {{ index .Values.service.ports 0 "port" }}  # 포트 참조 수정
