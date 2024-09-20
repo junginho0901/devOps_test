@@ -118,8 +118,10 @@ image:
 
 service:
   type: NodePort
-  port: 3000
-  nodePort: 31000  # 원하는 노드포트 번호 (옵션, 30000-32767 사이)
+  ports:
+    - port: 80
+      targetPort: 3000
+      nodePort: 31000
 
 # Ingress configuration
 ingress:
