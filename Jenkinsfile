@@ -4,7 +4,7 @@ pipeline {
         GIT_CREDENTIALS = credentials('junginho')
         GIT_USERNAME = "${GIT_CREDENTIALS_USR}"
         GIT_PASSWORD = "${GIT_CREDENTIALS_PSW}"
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials') // Docker Hub 자격증명 추가
+        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub') // Docker Hub 자격증명 추가
     }
     options {
         skipDefaultCheckout(true)
