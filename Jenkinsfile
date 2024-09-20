@@ -2,6 +2,8 @@ pipeline {
     agent any
     environment {
         GIT_CREDENTIALS = credentials('junginho')
+        GIT_USERNAME = "${GIT_CREDENTIALS_USR}"
+        GIT_PASSWORD = "${GIT_CREDENTIALS_PSW}"
     }
     options {
         skipDefaultCheckout(true)
