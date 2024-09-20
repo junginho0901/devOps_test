@@ -41,12 +41,20 @@ pipeline {
             steps {
                 sh '''
                     echo "Checking environment..."
-                    docker --version || echo "Docker not found"
-                    docker info || echo "Docker daemon not accessible"
+                    which docker || echo "Docker not found"
                     which git || echo "Git not found"
                     java -version || echo "Java not found"
                     which kubectl || echo "kubectl not found"
                     which helm || echo "Helm not found"
+                '''
+            }
+        }
+        stage('Setup Minikube Docker Env') {
+            steps {
+                sh '''
+                    echo "Setting up Minikube Docker environment..."
+                    eval $(minikube docker-env)
+                    docker info
                 '''
             }
         }
