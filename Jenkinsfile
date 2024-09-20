@@ -4,7 +4,7 @@ pipeline {
         GIT_CREDENTIALS = credentials('junginho')
         GIT_USERNAME = "${GIT_CREDENTIALS_USR}"
         GIT_PASSWORD = "${GIT_CREDENTIALS_PSW}"
-        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub') // Docker Hub 자격증명 추가
+        DOCKER_HUB_CREDENTIALS = credentials('junginho_hub') // Docker Hub 자격증명 ID 변경
     }
     options {
         skipDefaultCheckout(true)
@@ -52,10 +52,10 @@ pipeline {
                 '''
             }
         }
-        stage('Build and Push Docker Image') {  // Docker 이미지 빌드 및 푸시 추가
+        stage('Build and Push Docker Image') {  // Docker 이미지 빌드 및 푸시
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker_hub') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'junginho_hub') {  // 여기에 올바른 자격증명 ID를 사용
                         def image = docker.build("jeonginho/inhorepo:${IMAGE_TAG}")
                         image.push()
                     }
@@ -78,7 +78,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Kubernetes') {  // Helm 배포 추가
+        stage('Deploy to Kubernetes') {  // Helm 배포
             steps {
                 script {
                     sh """
