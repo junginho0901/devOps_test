@@ -7,8 +7,8 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.ports[0].port }}   # 배열의 첫 번째 값이 올바르게 참조되는지 확인
-      targetPort: {{ .Values.service.ports[0].targetPort }}  
-      nodePort: {{ .Values.service.ports[0].nodePort | default "" }} 
+    - port: {{ index .Values.service.ports 0 "port" }}   # 첫 번째 요소의 "port" 값을 참조
+      targetPort: {{ index .Values.service.ports 0 "targetPort" }}  
+      nodePort: {{ index .Values.service.ports 0 "nodePort" | default "" }}
   selector:
     {{- include "inhochart.selectorLabels" . | nindent 4 }}
