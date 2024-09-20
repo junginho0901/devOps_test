@@ -7,8 +7,8 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: 3000
-      nodePort: 31000
+    - port: {{ .Values.service.ports[0].port }}   # 포트 참조 수정
+      targetPort: {{ .Values.service.ports[0].targetPort }}  # 정확히 ports[0]로 참조
+      nodePort: {{ .Values.service.ports[0].nodePort | default "" }}  # NodePort 타입이 맞는지 확인
   selector:
     {{- include "inhochart.selectorLabels" . | nindent 4 }}
