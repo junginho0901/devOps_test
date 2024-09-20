@@ -55,7 +55,7 @@ pipeline {
         stage('Build and Push Docker Image') {  // Docker 이미지 빌드 및 푸시 추가
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker_hub') {
                         def image = docker.build("jeonginho/inhorepo:${IMAGE_TAG}")
                         image.push()
                     }
