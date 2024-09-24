@@ -133,6 +133,11 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
+          backend:
+            service:
+              name: inhoapp-inhochart
+              port:
+                number: 31000  # NodePort 포트로 변경
   tls: []
 
 
