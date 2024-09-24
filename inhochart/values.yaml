@@ -137,7 +137,7 @@ ingress:
             service:
               name: inhoapp-inhochart
               port:
-                number: 31000  # NodePort 포트로 변경
+                number: 80  # NodePort 포트로 변경
   tls: []
 
 
