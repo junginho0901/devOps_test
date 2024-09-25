@@ -6,6 +6,7 @@ metadata:
     {{- include "inhochart.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}  # 이전 레플리카셋이 남지 않도록 설정
   selector:
     matchLabels:
       {{- include "inhochart.selectorLabels" . | nindent 6 }}
