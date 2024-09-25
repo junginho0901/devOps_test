@@ -108,6 +108,7 @@
 
 # Deployment related
 replicaCount: 1
+revisionHistoryLimit: 0
 
 # Image configuration
 image:
