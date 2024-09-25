@@ -8,7 +8,7 @@
 #   repository: jeonginho/inhorepo
 #   pullPolicy: IfNotPresent
 #   # Overrides the image tag whose default is the chart appVersion.
-#   tag: "3-f31223d"
+#   tag: "62-464a045"
 
 # imagePullSecrets: []
 # nameOverride: ""
@@ -114,7 +114,7 @@ revisionHistoryLimit: 0
 image:
   repository: jeonginho/inhorepo
   pullPolicy: Always
-  tag: "3-f31223d"
+  tag: "62-464a045"
 
 
 service:
