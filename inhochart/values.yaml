@@ -114,7 +114,7 @@ revisionHistoryLimit: 0
 image:
   repository: jeonginho/inhorepo
   pullPolicy: Always
-  tag: "3-f31223d"
+  tag: "image-tag"
 
 
 service:
