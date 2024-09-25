@@ -6,7 +6,7 @@ metadata:
     {{- include "inhochart.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  revisionHistoryLimit: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       {{- include "inhochart.selectorLabels" . | nindent 6 }}
