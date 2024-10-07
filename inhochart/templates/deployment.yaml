@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "inhochart.fullname" . }}
-  namespace: {{ .Values.namespace }}  # values 파일에서 네임스페이스 값을 가져옴
   labels:
     {{- include "inhochart.labels" . | nindent 4 }}
 spec:
