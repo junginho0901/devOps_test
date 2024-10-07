@@ -119,7 +119,7 @@ image:
 
 service:
   type: NodePort
-  port: 3000
+  port: 8080
   nodePort: 31000  # 원하는 노드포트 번호 (옵션, 30000-32767 사이)
 
 # Ingress configuration
@@ -161,7 +161,7 @@ autoscaling:
 livenessProbe:
   httpGet:
     path: /health
-    port: 3000
+    port: 8080
   initialDelaySeconds: 60
   periodSeconds: 10
   timeoutSeconds: 1
@@ -169,7 +169,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /health
-    port: 3000
+    port: 8080
   initialDelaySeconds: 60
   periodSeconds: 10
   timeoutSeconds: 1
