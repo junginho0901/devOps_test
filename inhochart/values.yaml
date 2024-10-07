@@ -109,6 +109,7 @@
 # Deployment related
 replicaCount: 1
 revisionHistoryLimit: 0
+namespace: inho-devops-server  # 원하는 네임스페이스 명시
 
 # Image configuration
 image:
