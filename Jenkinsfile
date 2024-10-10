@@ -98,9 +98,28 @@
 
 pipeline {
     agent {
-        docker {
-            image 'docker:20.10.7'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        kubernetes {
+            yaml '''
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-docker-agent
+spec:
+  containers:
+  - name: docker
+    image: docker:20.10.7
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: docker-sock
+      mountPath: /var/run/docker.sock
+  volumes:
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock
+      type: Socket
+'''
         }
     }
     environment {
@@ -156,10 +175,12 @@ pipeline {
         }
         stage('Build and Push Docker Image') {  // Docker 이미지 빌드 및 푸시
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'junginho_hub') {  // Docker Hub 인증
-                        def image = docker.build("jeonginho/inhorepo:${IMAGE_TAG}")
-                        image.push()  // Docker Hub로 이미지 푸시
+                container('docker') {  // docker 컨테이너 내에서 작업
+                    script {
+                        docker.withRegistry('https://index.docker.io/v1/', 'junginho_hub') {  // Docker Hub 인증
+                            def image = docker.build("jeonginho/inhorepo:${IMAGE_TAG}")
+                            image.push()  // Docker Hub로 이미지 푸시
+                        }
                     }
                 }
             }
@@ -170,7 +191,7 @@ pipeline {
                     script {
                         sh """
                             # Ops 브랜치로 전환
-                            git checkout ops || git checkout -b ops  # 브랜치가 없으면 새로 생성
+                            git checkout ops
                             
                             # Ops 브랜치의 Helm 차트의 values.yaml 파일에서 이미지 태그 업데이트
                             sed -i 's|tag: .*|tag: "${IMAGE_TAG}"|' ./inhochart/values.yaml
